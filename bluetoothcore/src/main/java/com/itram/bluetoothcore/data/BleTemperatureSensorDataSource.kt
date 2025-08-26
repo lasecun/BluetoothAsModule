@@ -1,8 +1,6 @@
 package com.itram.bluetoothcore.data
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
@@ -13,7 +11,6 @@ import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 class BleTemperatureSensorDataSource(private val context: Context) : TemperatureSensorDataSource {
     private var bluetoothGatt: BluetoothGatt? = null
@@ -29,18 +26,11 @@ class BleTemperatureSensorDataSource(private val context: Context) : Temperature
     @SuppressLint("MissingPermission")
     override suspend fun connect(deviceAddress: String): Boolean = suspendCancellableCoroutine { cont ->
         android.util.Log.i("BLE_DS", "connect() llamado con $deviceAddress")
-        // Comprobación de permisos en tiempo de ejecución
-        val hasConnectPerm = ContextCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-        val hasScanPerm = ContextCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
-        if (!hasConnectPerm || !hasScanPerm) {
-            android.util.Log.e("BLE_DS", "Faltan permisos BLUETOOTH_CONNECT o BLUETOOTH_SCAN")
-            cont.resume(false)
-            return@suspendCancellableCoroutine
-        }
+        // Asume que los permisos ya han sido concedidos en la capa de presentación
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
         val device = bluetoothAdapter.getRemoteDevice(deviceAddress)
-        android.util.Log.i("BLE_DS", "Permisos OK, llamando a connectGatt...")
+        android.util.Log.i("BLE_DS", "Llamando a connectGatt...")
         gattCallback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 android.util.Log.i("BLE_DS", "onConnectionStateChange: status=$status, newState=$newState")

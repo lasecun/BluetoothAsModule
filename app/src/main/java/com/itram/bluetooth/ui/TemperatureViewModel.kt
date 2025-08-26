@@ -22,7 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TemperatureViewModel @Inject constructor(
     dataSource: TemperatureSensorDataSource,
-    private val scanBleDevicesUseCase: ScanBleDevicesUseCase
+    scanBleDevicesUseCase: ScanBleDevicesUseCase
 ) : ViewModel() {
     private val repository = TemperatureSensorRepositoryImpl(dataSource)
     private val connectUseCase = ConnectToSensorUseCase(repository)

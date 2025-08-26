@@ -1,15 +1,13 @@
 package com.itram.bluetoothcore.data.repository;
 
-import android.content.Context;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
-import dagger.internal.Provider;
 import dagger.internal.QualifierMetadata;
 import dagger.internal.ScopeMetadata;
 import javax.annotation.processing.Generated;
 
 @ScopeMetadata
-@QualifierMetadata("dagger.hilt.android.qualifiers.ApplicationContext")
+@QualifierMetadata
 @DaggerGenerated
 @Generated(
     value = "dagger.internal.codegen.ComponentProcessor",
@@ -25,22 +23,20 @@ import javax.annotation.processing.Generated;
     "nullness:initialization.field.uninitialized"
 })
 public final class BleScanRepositoryImpl_Factory implements Factory<BleScanRepositoryImpl> {
-  private final Provider<Context> contextProvider;
-
-  private BleScanRepositoryImpl_Factory(Provider<Context> contextProvider) {
-    this.contextProvider = contextProvider;
-  }
-
   @Override
   public BleScanRepositoryImpl get() {
-    return newInstance(contextProvider.get());
+    return newInstance();
   }
 
-  public static BleScanRepositoryImpl_Factory create(Provider<Context> contextProvider) {
-    return new BleScanRepositoryImpl_Factory(contextProvider);
+  public static BleScanRepositoryImpl_Factory create() {
+    return InstanceHolder.INSTANCE;
   }
 
-  public static BleScanRepositoryImpl newInstance(Context context) {
-    return new BleScanRepositoryImpl(context);
+  public static BleScanRepositoryImpl newInstance() {
+    return new BleScanRepositoryImpl();
+  }
+
+  private static final class InstanceHolder {
+    static final BleScanRepositoryImpl_Factory INSTANCE = new BleScanRepositoryImpl_Factory();
   }
 }
