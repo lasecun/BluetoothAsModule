@@ -9,6 +9,8 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -23,6 +25,9 @@ class BleTemperatureSensorDataSource(private val context: Context) : Temperature
 
     private var gattCallback: BluetoothGattCallback? = null
 
+    private val _connectionState = MutableStateFlow(false)
+    override val connectionState: StateFlow<Boolean> get() = _connectionState
+
     @SuppressLint("MissingPermission")
     override suspend fun connect(deviceAddress: String): Boolean = suspendCancellableCoroutine { cont ->
         android.util.Log.i("BLE_DS", "connect() llamado con $deviceAddress")
@@ -35,36 +40,32 @@ class BleTemperatureSensorDataSource(private val context: Context) : Temperature
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 android.util.Log.i("BLE_DS", "onConnectionStateChange: status=$status, newState=$newState")
                 if (status != BluetoothGatt.GATT_SUCCESS) {
-                    android.util.Log.e("BLE_DS", "Connection failed with status: $status")
+                    android.util.Log.d("SNACKBAR_DEBUG", "connect: fallo en status, resume(false)")
                     connected = false
-                    cont.resume(false)
+                    _connectionState.value = false
+                    if (cont.isActive) cont.resume(false)
                     return
                 }
                 if (newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED) {
-                    android.util.Log.i("BLE_DS", "STATE_CONNECTED, discovering services...")
                     connected = true
+                    _connectionState.value = true
                     gatt.discoverServices()
                     // No hacemos resume aquí, esperamos a onServicesDiscovered
                 } else if (newState == android.bluetooth.BluetoothProfile.STATE_DISCONNECTED) {
-                    android.util.Log.i("BLE_DS", "STATE_DISCONNECTED")
+                    android.util.Log.d("SNACKBAR_DEBUG", "connect: STATE_DISCONNECTED, resume(false)")
                     connected = false
-                    cont.resume(false)
+                    _connectionState.value = false
+                    if (cont.isActive) cont.resume(false)
                 }
             }
             override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
                 android.util.Log.i("BLE_DS", "onServicesDiscovered: status=$status")
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    val services = gatt.services
-                    for (service in services) {
-                        android.util.Log.i("BLE_DS", "Service UUID: ${service.uuid}")
-                        for (characteristic in service.characteristics) {
-                            android.util.Log.i("BLE_DS", "  Characteristic UUID: ${characteristic.uuid}, properties: ${characteristic.properties}")
-                        }
-                    }
-                    cont.resume(true)
+                    android.util.Log.d("SNACKBAR_DEBUG", "connect: servicios descubiertos OK, resume(true)")
+                    if (cont.isActive) cont.resume(true)
                 } else {
-                    android.util.Log.e("BLE_DS", "Service discovery failed: $status")
-                    cont.resume(false)
+                    android.util.Log.d("SNACKBAR_DEBUG", "connect: fallo en servicios, resume(false)")
+                    if (cont.isActive) cont.resume(false)
                 }
             }
         }
@@ -78,6 +79,7 @@ class BleTemperatureSensorDataSource(private val context: Context) : Temperature
         bluetoothGatt?.close()
         bluetoothGatt = null
         connected = false
+        _connectionState.value = false
     }
 
     @SuppressLint("MissingPermission")

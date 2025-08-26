@@ -27,6 +27,14 @@ class PermissionViewModel(
     private val _state = MutableStateFlow<PermissionState>(PermissionState.Explanation)
     val state: StateFlow<PermissionState> = _state
 
+    init {
+        if (checkPermissions()) {
+            _state.value = PermissionState.Granted
+        } else {
+            _state.value = PermissionState.Explanation
+        }
+    }
+
     fun checkPermissions(): Boolean = permissions.all {
         ContextCompat.checkSelfPermission(getApplication(), it) == PackageManager.PERMISSION_GRANTED
     }
@@ -48,4 +56,3 @@ class PermissionViewModel(
         _state.value = PermissionState.Explanation
     }
 }
-

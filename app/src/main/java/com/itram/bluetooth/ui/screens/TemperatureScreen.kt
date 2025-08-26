@@ -18,13 +18,17 @@ import com.itram.bluetooth.ui.components.ConnectionStatus
 import com.itram.bluetooth.ui.components.TemperatureValue
 import com.itram.bluetooth.ui.components.BleDevicesMessage
 import kotlinx.coroutines.delay
+import androidx.compose.material3.SnackbarHostState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TemperatureScreen(viewModel: TemperatureViewModel = hiltViewModel()) {
+fun TemperatureScreen(
+    viewModel: TemperatureViewModel = hiltViewModel()
+) {
     val isConnected by viewModel.isConnected.collectAsState()
     val temperature by viewModel.temperature.collectAsState()
     val bleDevices by viewModel.bleDevices.collectAsState()
+    val isConnecting by viewModel.isConnecting.collectAsState()
     var selectedDeviceAddress by remember { mutableStateOf<String?>(null) }
     var showNoDevicesMessage by remember { mutableStateOf(false) }
 
@@ -50,13 +54,19 @@ fun TemperatureScreen(viewModel: TemperatureViewModel = hiltViewModel()) {
         ConnectionStatus(isConnected)
         Spacer(modifier = Modifier.height(16.dp))
         if (isConnected) {
-            Button(onClick = { viewModel.readTemperature() }) {
+            Button(
+                onClick = { viewModel.readTemperature() },
+                enabled = !isConnecting
+            ) {
                 Text("Leer temperatura")
             }
             Spacer(modifier = Modifier.height(16.dp))
             TemperatureValue(temperature)
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { viewModel.disconnect() }) {
+            Button(
+                onClick = { viewModel.disconnect() },
+                enabled = !isConnecting
+            ) {
                 Text("Desconectar")
             }
         } else {
@@ -73,7 +83,8 @@ fun TemperatureScreen(viewModel: TemperatureViewModel = hiltViewModel()) {
                             onClick = {
                                 selectedDeviceAddress = device.address
                                 viewModel.connect(device.address)
-                            }
+                            },
+                            enabled = !isConnecting
                         )
                     }
                 }
@@ -81,6 +92,14 @@ fun TemperatureScreen(viewModel: TemperatureViewModel = hiltViewModel()) {
             Spacer(modifier = Modifier.height(16.dp))
             if (selectedDeviceAddress != null) {
                 Text(text = "Dispositivo seleccionado: $selectedDeviceAddress")
+            }
+        }
+        if (isConnecting) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.material3.CircularProgressIndicator()
             }
         }
     }

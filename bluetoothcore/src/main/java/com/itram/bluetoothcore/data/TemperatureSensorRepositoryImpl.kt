@@ -7,5 +7,5 @@ class TemperatureSensorRepositoryImpl(private val dataSource: TemperatureSensorD
     override suspend fun disconnect() = dataSource.disconnect()
     override suspend fun getTemperature(): Float? = dataSource.readTemperature()
     override fun isConnected(): Boolean = dataSource.isConnected()
+    override val connectionState get() = dataSource.connectionState
 }
-

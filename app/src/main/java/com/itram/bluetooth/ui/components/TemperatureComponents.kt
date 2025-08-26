@@ -8,9 +8,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun BleDeviceButton(name: String?, address: String, onClick: () -> Unit) {
+fun BleDeviceButton(name: String?, address: String, onClick: () -> Unit, enabled: Boolean = true) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = Modifier.padding(vertical = 2.dp)
     ) {
         Text(text = "${name ?: "Sin nombre"} ($address)")
@@ -39,4 +40,3 @@ fun BleDevicesMessage(isSearching: Boolean) {
         Text(text = "No se han encontrado dispositivos BLE.")
     }
 }
-
